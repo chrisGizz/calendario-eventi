@@ -244,22 +244,25 @@ document.getElementById("gateContinue").addEventListener("click", () => {
   } catch {}
 
   // sblocca i pulsanti (Teams + Invita)
-  fetch(SIGNUP_ENDPOINT, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    nome: name,
-    cognome: surname,
-    evento: window.__currentEvent.title,
-    eventId: window.__currentEvent.id
-  })
-})
-.then(() => {
-  setGatedVisibility(true); // sblocca il link SOLO dopo salvataggio
-})
-.catch(() => {
+ const payload = {
+  nome: name,
+  cognome: surname,
+  evento: window.__currentEvent.title,
+  eventId: window.__currentEvent.id
+};
+
+// Invia senza leggere risposta (evita problemi CORS)
+const ok = navigator.sendBeacon(
+  SIGNUP_ENDPOINT,
+  new Blob([JSON.stringify(payload)], { type: "text/plain;charset=UTF-8" })
+);
+
+if (ok) {
+  setGatedVisibility(true); // sblocca link
+} else {
   alert("Errore nel salvataggio. Riprova.");
-});
+}
+
 });
 
   async function loadEvents() {
