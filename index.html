@@ -17,24 +17,29 @@
     #calendar { background: white; border:1px solid #eaeaea; border-radius: 12px; padding: 10px; }
     .modal-backdrop {
   position: fixed;
-  inset: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,.45);
   display: none;
   align-items: center;
   justify-content: center;
   padding: 16px;
-  z-index: 9999;            /* << sopra il calendario */
+  z-index: 2147483647 !important;
+
+  /* importantissimo: intercetta i click */
+  pointer-events: auto;
 }
 
+
 .modal {
-  background: white;
+  background: #fff !important;
   width: min(720px, 100%);
   border-radius: 14px;
   padding: 16px 16px 12px;
   box-shadow: 0 20px 60px rgba(0,0,0,.25);
-  max-height: 80vh;         /* << evita che “esca” fuori */
-  overflow: auto;           /* << scroll interno se serve */
+  max-height: 80vh;
+  overflow: auto;
 }
+
 
     .modal h2 { margin: 0 0 6px; font-size: 18px; }
     .meta { color:#444; font-size: 14px; margin: 0 0 12px; }
@@ -43,6 +48,29 @@
     .btn { border:1px solid #ddd; background:#fff; padding:8px 10px; border-radius: 10px; cursor:pointer; text-decoration:none; color:#111; font-size:14px; }
     .btn.primary { background:#111; color:#fff; border-color:#111; }
     .small { font-size: 12px; color:#666; margin-top: 10px; }
+    /* layer super-top per la modal */
+.modal-backdrop { z-index: 2147483647 !important; }
+
+/* blocca qualsiasi click/hover sul calendario quando la modal è aperta */
+body.modal-open #calendar {
+  pointer-events: none;
+  user-select: none;
+  filter: blur(0px);
+}
+
+/* evita che il calendario “buca” la modal per stacking context strani */
+body.modal-open .fc {
+  position: relative;
+  z-index: 1;
+}
+
+/* la modal sta ancora più su */
+body.modal-open .modal {
+  position: relative;
+  z-index: 2147483647 !important;
+  background: #fff;
+}
+
   </style>
 </head>
 <body>
@@ -113,6 +141,7 @@ A presto`);
   }
 
   function openModal(eventObj) {
+    document.body.classList.add("modal-open");
     const ev = eventObj;
     document.getElementById("mTitle").textContent = ev.title;
     document.getElementById("mMeta").textContent = formatDateRange(ev.start, ev.end);
@@ -134,7 +163,8 @@ A presto`);
   }
 
   function closeModal() {
-    document.getElementById("backdrop").style.display = "none";
+   document.body.classList.remove("modal-open");
+   document.getElementById("backdrop").style.display = "none";
   }
 
   document.getElementById("mClose").addEventListener("click", closeModal);
