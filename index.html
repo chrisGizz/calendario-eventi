@@ -126,6 +126,8 @@ body.modal-open .modal {
   </div>
 
 <script>
+  const SIGNUP_ENDPOINT = "https://script.google.com/macros/s/AKfycbwqsXYiMCFC6sqfmKJfdyDhANs0NIArsutK7dqpNzxiMQHX_8K0vkudrcqkY_rvbxaF/exec";
+
   const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLMB1CPo-71JPfgohwLeO8arfYsDROVEJo9aAu31VDQhFbZXDJDZywwg4jwhKJ1jsw-3lq0OOfiGPx/pub?gid=0&single=true&output=csv";
 
   function parseCSV(text) {
@@ -247,7 +249,22 @@ document.getElementById("gateContinue").addEventListener("click", () => {
   } catch {}
 
   // sblocca i pulsanti (Teams + Invita)
-  setGatedVisibility(true);
+  fetch(SIGNUP_ENDPOINT, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    nome: name,
+    cognome: surname,
+    evento: window.__currentEvent.title,
+    eventId: window.__currentEvent.id
+  })
+})
+.then(() => {
+  setGatedVisibility(true); // sblocca il link SOLO dopo salvataggio
+})
+.catch(() => {
+  alert("Errore nel salvataggio. Riprova.");
+});
 });
 
   async function loadEvents() {
