@@ -80,6 +80,7 @@ body.modal-open .modal {
 
   <div id="wrap">
     <div id="calendar"></div>
+    <p id="status" class="small"></p>
     <p class="small">
       *Gli eventi sono gestiti da un foglio Google (aggiornamento automatico).*
     </p>
@@ -176,16 +177,10 @@ function setGatedVisibility(isUnlocked) {
     return;
   }
 
-  // stato iniziale: SOLO form
   gate.style.display = "block";
   teams.style.display = "none";
 }
 
-  // Se bloccato: nascondo i pulsanti e mostro il form
-  gate.style.display = "block";
-  teams.style.display = "none";
-  invite.style.display = "none";
-}
 
   function openModal(eventObj) {
     document.body.classList.add("modal-open");
@@ -198,7 +193,7 @@ function setGatedVisibility(isUnlocked) {
     const teamsLink = ev.extendedProps.teamsLink || "#";
     teams.href = teamsLink;
   
-    invite.href = mailtoForEvent(ev);
+    
 
     document.getElementById("mHint").textContent =
       "Nota: l’invio email avviene dal tuo programma/webmail aziendale. Per tracciare a chi lo hai inviato serve un registro (manuale o script).";
@@ -310,12 +305,11 @@ document.getElementById("gateContinue").addEventListener("click", () => {
       const events = await loadEvents();
       calendar.addEventSource(events);
     } catch (err) {
-      calendarEl.insertAdjacentHTML("beforebegin",
-        `<p style="color:#b00020;background:#fff;border:1px solid #ffd7db;padding:10px;border-radius:10px;">
-          Errore: ${err.message}
-        </p>`);
-      console.error(err);
-    }
+  document.getElementById("status").textContent =
+    "Errore caricamento eventi: " + err.message;
+
+  console.error(err);
+}
   });
 </script>
 </body>
