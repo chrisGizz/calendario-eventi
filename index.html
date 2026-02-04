@@ -345,7 +345,7 @@ document.getElementById("gateContinue").addEventListener("click", () => {
 });
 
 
-  async function loadEvents() {
+ async function loadEvents() {
   const res = await fetch(CSV_URL, { cache: "no-store" });
   if (!res.ok) throw new Error("Impossibile caricare il CSV pubblicato.");
   const text = await res.text();
@@ -367,6 +367,7 @@ document.getElementById("gateContinue").addEventListener("click", () => {
       }
     }));
 }
+
 
 
   document.addEventListener("DOMContentLoaded", async function() {
