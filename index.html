@@ -114,11 +114,13 @@ body.modal-open .modal {
   </p>
 </div>
 
-      <div class="actions">
-        <a id="mTeams" class="btn" href="#" target="_blank" rel="noreferrer">Apri link Teams</a>
-        <a id="mInvite" class="btn primary" href="#">Invita via email</a>
-        <button id="mClose" class="btn" type="button">Chiudi</button>
-      </div>
+     <div class="actions" id="actions">
+  <a id="mTeams" class="btn primary" href="#" target="_blank" rel="noreferrer" style="display:none;">
+    Apri link Teams
+  </a>
+  <button id="mClose" class="btn" type="button">Chiudi</button>
+</div>
+
       <p class="small" id="mHint"></p>
     </div>
   </div>
@@ -164,16 +166,18 @@ A presto`);
   }
 function setGatedVisibility(isUnlocked) {
   const teams = document.getElementById("mTeams");
-  const invite = document.getElementById("mInvite");
   const gate = document.getElementById("gate");
 
-  // Se sbloccato: mostro i pulsanti e nascondo il form
   if (isUnlocked) {
     gate.style.display = "none";
     teams.style.display = teams.href && teams.href !== "#" ? "inline-block" : "none";
-    invite.style.display = "inline-block";
     return;
   }
+
+  // stato iniziale: SOLO form
+  gate.style.display = "block";
+  teams.style.display = "none";
+}
 
   // Se bloccato: nascondo i pulsanti e mostro il form
   gate.style.display = "block";
@@ -191,15 +195,14 @@ function setGatedVisibility(isUnlocked) {
     const teams = document.getElementById("mTeams");
     const teamsLink = ev.extendedProps.teamsLink || "#";
     teams.href = teamsLink;
-    teams.style.display = teamsLink && teamsLink !== "#" ? "inline-block" : "none";
-
-    const invite = document.getElementById("mInvite");
+  
     invite.href = mailtoForEvent(ev);
 
     document.getElementById("mHint").textContent =
       "Nota: l’invio email avviene dal tuo programma/webmail aziendale. Per tracciare a chi lo hai inviato serve un registro (manuale o script).";
 
     const backdrop = document.getElementById("backdrop");
+   setGatedVisibility(false);
     backdrop.style.display = "flex";
     // focus sul nome per comodità
 setTimeout(() => document.getElementById("gateName").focus(), 50);
