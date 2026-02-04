@@ -15,8 +15,27 @@
     header h1 { margin: 0; font-size: 18px; }
     #wrap { max-width: 1100px; margin: 18px auto; padding: 0 14px; }
     #calendar { background: white; border:1px solid #eaeaea; border-radius: 12px; padding: 10px; }
-    .modal-backdrop { position: fixed; inset:0; background: rgba(0,0,0,.35); display:none; align-items:center; justify-content:center; padding: 16px; }
-    .modal { background: white; width: min(720px, 100%); border-radius: 14px; padding: 16px 16px 12px; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+    .modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 9999;            /* << sopra il calendario */
+}
+
+.modal {
+  background: white;
+  width: min(720px, 100%);
+  border-radius: 14px;
+  padding: 16px 16px 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  max-height: 80vh;         /* << evita che “esca” fuori */
+  overflow: auto;           /* << scroll interno se serve */
+}
+
     .modal h2 { margin: 0 0 6px; font-size: 18px; }
     .meta { color:#444; font-size: 14px; margin: 0 0 12px; }
     .desc { white-space: pre-wrap; color:#222; margin: 0 0 12px; }
