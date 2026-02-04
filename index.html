@@ -346,29 +346,28 @@ document.getElementById("gateContinue").addEventListener("click", () => {
 
 
   async function loadEvents() {
-   const norm = s => (s || "").replace(" ", "T");
-...
-start: norm(r.start),
-end: r.end ? norm(r.end) : null,
+  const res = await fetch(CSV_URL, { cache: "no-store" });
+  if (!res.ok) throw new Error("Impossibile caricare il CSV pubblicato.");
+  const text = await res.text();
+  const rows = parseCSV(text);
 
-    const res = await fetch(CSV_URL, { cache: "no-store" });
-    if (!res.ok) throw new Error("Impossibile caricare il CSV pubblicato.");
-    const text = await res.text();
-    const rows = parseCSV(text);
+  // normalizza date: "YYYY-MM-DD HH:MM:SS" -> "YYYY-MM-DDTHH:MM:SS"
+  const norm = s => (s || "").replace(" ", "T");
 
-    return rows
-      .filter(r => r.title && r.start)
-      .map(r => ({
-        id: r.id || crypto.randomUUID(),
-        title: r.title,
-        start: r.start,
-        end: r.end || null,
-        extendedProps: {
-          teamsLink: r.teamsLink || "",
-          description: r.description || ""
-        }
-      }));
-  }
+  return rows
+    .filter(r => r.title && r.start)
+    .map(r => ({
+      id: r.id || crypto.randomUUID(),
+      title: r.title,
+      start: norm(r.start),
+      end: r.end ? norm(r.end) : null,
+      extendedProps: {
+        teamsLink: r.teamsLink || "",
+        description: r.description || ""
+      }
+    }));
+}
+
 
   document.addEventListener("DOMContentLoaded", async function() {
     const calendarEl = document.getElementById("calendar");
