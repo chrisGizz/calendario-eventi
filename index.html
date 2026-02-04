@@ -119,7 +119,10 @@ body.modal-open .modal {
   <a id="mTeams" class="btn primary" href="#" target="_blank" rel="noreferrer" style="display:none;">
     Apri link Teams
   </a>
-  <button id="mClose" class="btn" type="button">Chiudi</button>
+ <a id="mOutlook" class="btn primary" href="#" style="display:none;">
+  Aggiungi a Outlook
+</a>
+       <button id="mClose" class="btn" type="button">Chiudi</button>
 </div>
 
       <p class="small" id="mHint"></p>
@@ -181,6 +184,76 @@ function setGatedVisibility(isUnlocked) {
   teams.style.display = "none";
 }
 
+function pad2(n){ return String(n).padStart(2,"0"); }
+
+function toICSDate(d) {
+  // UTC in formato YYYYMMDDTHHMMSSZ
+  const dt = new Date(d);
+  return dt.getUTCFullYear()
+    + pad2(dt.getUTCMonth()+1)
+    + pad2(dt.getUTCDate())
+    + "T"
+    + pad2(dt.getUTCHours())
+    + pad2(dt.getUTCMinutes())
+    + pad2(dt.getUTCSeconds())
+    + "Z";
+}
+
+function escapeICSText(s) {
+  return String(s || "")
+    .replace(/\\/g, "\\\\")
+    .replace(/\n/g, "\\n")
+    .replace(/,/g, "\\,")
+    .replace(/;/g, "\\;");
+}
+
+function buildICS(ev) {
+  const dtStart = toICSDate(ev.start);
+  const dtEnd = toICSDate(ev.end || ev.start); // se manca end, usa start
+  const uid = escapeICSText(ev.id || crypto.randomUUID());
+
+  const title = escapeICSText(ev.title);
+  const desc = escapeICSText(
+    (ev.extendedProps?.description || "") +
+    "\n\nLink Teams:\n" + (ev.extendedProps?.teamsLink || "")
+  );
+
+  const url = escapeICSText(ev.extendedProps?.teamsLink || "");
+
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Calendario Eventi//IT",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `UID:${uid}`,
+    `DTSTAMP:${toICSDate(new Date())}`,
+    `DTSTART:${dtStart}`,
+    `DTEND:${dtEnd}`,
+    `SUMMARY:${title}`,
+    `DESCRIPTION:${desc}`,
+    url ? `URL:${url}` : "",
+    "END:VEVENT",
+    "END:VCALENDAR"
+  ].filter(Boolean).join("\r\n");
+}
+
+function downloadICS(ev) {
+  const ics = buildICS(ev);
+  const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${(ev.title || "evento").replace(/[^\w\d-_]+/g, "_")}.ics`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  // libera la memoria
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
 
   function openModal(eventObj) {
     document.body.classList.add("modal-open");
@@ -192,7 +265,11 @@ function setGatedVisibility(isUnlocked) {
     const teams = document.getElementById("mTeams");
     const teamsLink = ev.extendedProps.teamsLink || "#";
     teams.href = teamsLink;
-  
+  // prepara bottone outlook (nascosto finché non si sblocca)
+const outlookBtn = document.getElementById("mOutlook");
+outlookBtn.style.display = "none";
+outlookBtn.onclick = () => downloadICS(ev);
+
     
 
     document.getElementById("mHint").textContent =
@@ -259,6 +336,8 @@ const ok = navigator.sendBeacon(
 
 if (ok) {
   setGatedVisibility(true); // sblocca link
+  document.getElementById("mOutlook").style.display = "inline-block";
+
 } else {
   alert("Errore nel salvataggio. Riprova.");
 }
