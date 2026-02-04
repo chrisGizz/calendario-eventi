@@ -155,21 +155,7 @@ body.modal-open .modal {
     return `${s} → ${e}`;
   }
 
-  function mailtoForEvent(ev) {
-    const subject = encodeURIComponent(`[Invito] ${ev.title}`);
-    const body = encodeURIComponent(
-`Ciao,
-sei invitato/a a: ${ev.title}
 
-Quando: ${formatDateRange(ev.start, ev.end)}
-Link Teams: ${ev.extendedProps.teamsLink || "(non disponibile)"}
-
-Dettagli:
-${ev.extendedProps.description || ""}
-
-A presto`);
-    return `mailto:?subject=${subject}&body=${body}`;
-  }
 function setGatedVisibility(isUnlocked) {
   const teams = document.getElementById("mTeams");
   const gate = document.getElementById("gate");
@@ -345,6 +331,11 @@ if (ok) {
 });
 
   async function loadEvents() {
+   const norm = s => (s || "").replace(" ", "T");
+...
+start: norm(r.start),
+end: r.end ? norm(r.end) : null,
+
     const res = await fetch(CSV_URL, { cache: "no-store" });
     if (!res.ok) throw new Error("Impossibile caricare il CSV pubblicato.");
     const text = await res.text();
