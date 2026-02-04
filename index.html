@@ -292,43 +292,58 @@ setGatedVisibility(false);
 document.getElementById("gateContinue").addEventListener("click", () => {
   const name = document.getElementById("gateName").value.trim();
   const surname = document.getElementById("gateSurname").value.trim();
+  const error = document.getElementById("gateError");
+  const btn = document.getElementById("gateContinue");
 
   if (!name || !surname) {
-    document.getElementById("gateError").style.display = "block";
+    error.style.display = "block";
     return;
   }
 
-  document.getElementById("gateError").style.display = "none";
+  error.style.display = "none";
 
-  // (opzionale) ricorda il nome sul browser
+  // disabilita bottone (anti doppio click)
+  btn.disabled = true;
+  btn.textContent = "Salvataggio...";
+
+  const payload = {
+    nome: name,
+    cognome: surname,
+    evento: window.__currentEvent.title,
+    eventId: window.__currentEvent.id
+  };
+
+  // invio fire-and-forget
+  const ok = navigator.sendBeacon(
+    SIGNUP_ENDPOINT,
+    new Blob([JSON.stringify(payload)], {
+      type: "text/plain;charset=UTF-8"
+    })
+  );
+
+  // riabilita bottone
+  btn.disabled = false;
+  btn.textContent = "Continua";
+
+  if (!ok) {
+    alert("Errore nel salvataggio. Riprova.");
+    return;
+  }
+
+  // opzionale: ricorda nome/cognome
   try {
     localStorage.setItem("calendar_attendee_name", name);
     localStorage.setItem("calendar_attendee_surname", surname);
   } catch {}
 
-  // sblocca i pulsanti (Teams + Invita)
- const payload = {
-  nome: name,
-  cognome: surname,
-  evento: window.__currentEvent.title,
-  eventId: window.__currentEvent.id
-};
+  // sblocca link Teams
+  setGatedVisibility(true);
 
-// Invia senza leggere risposta (evita problemi CORS)
-const ok = navigator.sendBeacon(
-  SIGNUP_ENDPOINT,
-  new Blob([JSON.stringify(payload)], { type: "text/plain;charset=UTF-8" })
-);
-
-if (ok) {
-  setGatedVisibility(true); // sblocca link
-  document.getElementById("mOutlook").style.display = "inline-block";
-
-} else {
-  alert("Errore nel salvataggio. Riprova.");
-}
-
+  // mostra bottone Outlook (se presente)
+  const outlookBtn = document.getElementById("mOutlook");
+  if (outlookBtn) outlookBtn.style.display = "inline-block";
 });
+
 
   async function loadEvents() {
    const norm = s => (s || "").replace(" ", "T");
